@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const router = express.Router();
 const passportJWT = require('../middleware/passport-jwt');
+const connectRabbitMQ = require('../config/rabbitmq')
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -80,21 +81,42 @@ router.post('/register', async function(req, res, next) {
     const passwordHash = await bcrypt.hash(password, salt);
 
     // create user
-    await User.create({
+    const NewUser = await User.create({
       fullname: fullname,
       email: email,
       password: passwordHash
     });
+
+    // connect to rabbitmq
+    const channel = await connectRabbitMQ();
+
+    // create exchange
+    await channel.assertExchange('ex.supachai.direct', 'direct', { durable: true });
+
+    // create queue
+    await channel.assertQueue('q.supachai.direct.product.service', { durable: true });
+
+    // publish message
+    await channel.publish(
+      'ex.supachai.direct',
+      'rk.supachai.product.service',
+      Buffer.from(JSON.stringify({
+        id: NewUser.id,
+        fullname: NewUser.fullname,
+        role: NewUser.role
+      })),
+      {
+        contentType: 'application/json',
+        contentEncoding: 'utf-8',
+        type: 'UserCreated',
+        persistent: true
+      }
+    );
     
     return res.status(200).json({
       message: 'register users'
     });
   }
-
-
-  return res.status(200).json({
-    message: 'register users'
-  });
 });
 
 module.exports = router;

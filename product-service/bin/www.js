@@ -7,6 +7,8 @@
 const app = require('../app');
 const debug = require('debug')('auth-service:server');
 const http = require('http');
+const connectRabbitMQ = require('../config/rabbitmq');
+const User = require('../models/user');
 
 /**
  * Get port from environment and store in Express.
@@ -81,10 +83,37 @@ function onError(error) {
  * Event listener for HTTP server "listening" event.
  */
 
-function onListening() {
+async function onListening() {
   const addr = server.address();
   const bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
+
+  // connect rabbitmq
+  const channel = await connectRabbitMQ();
+
+  // consume message
+  await channel.consume('q.supachai.direct.product.service', async (msg) => {
+    if( msg )
+    {
+      if( msg.properties.type === 'UserCreated' )
+      {
+        const user = JSON.parse(msg.content.toString())
+        const NewUser = await User.create({
+          user_id: user.id,
+          fullname: user.fullname,
+          role: user.role
+        });
+        if( NewUser )
+        {
+          console.log('User created', NewUser.user_id);
+        }
+      }
+
+      channel.ack(msg);
+    } else {
+
+    }
+  })
 }
