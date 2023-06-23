@@ -113,6 +113,27 @@ router.post('/register', async function(req, res, next) {
       }
     );
     
+    //! fanout
+    await channel.assertExchange('ex.supachai.fanout', 'fanout', { durable: true });
+
+    // create queue
+    await channel.assertQueue('q.supachai.product.service', { durable: true });
+
+    // publish message
+    await channel.publish(
+      'ex.supachai.fanout',
+      '',
+      Buffer.from(JSON.stringify({
+        message: 'auth-service fanout message'
+      })),
+      {
+        contentType: 'application/json',
+        contentEncoding: 'utf-8',
+        type: 'UserFanout',
+        persistent: true
+      }
+    );
+
     return res.status(200).json({
       message: 'register users'
     });

@@ -108,12 +108,22 @@ async function onListening() {
         if( NewUser )
         {
           console.log('User created', NewUser.user_id);
+          channel.ack(msg);
         }
       }
-
-      channel.ack(msg);
     } else {
-
+      console.log('No message');
     }
+
+    // fanout
+    await channel.consume('q.supachai.product.service', (msg) => {
+      if(msg)
+      {
+        console.log('Fanout', msg.content.toString());
+        channel.ack(msg);
+      } else {
+        console.log('No fanout message');
+      }
+    })
   })
 }

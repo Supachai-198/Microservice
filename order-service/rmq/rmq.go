@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	exchange          = flag.String("exchange", "ex.akenarin.fanout", "Durable, non-auto-deleted AMQP exchange name")
+	exchange          = flag.String("exchange", "ex.supachai.fanout", "Durable, non-auto-deleted AMQP exchange name")
 	exchangeType      = flag.String("exchange-type", "fanout", "Exchange type - direct|fanout|topic|x-custom")
-	queue             = flag.String("queue", "q.akenarin.order.service", "Ephemeral AMQP queue name")
+	queue             = flag.String("queue", "q.supachai.order.service", "Ephemeral AMQP queue name")
 	bindingKey        = flag.String("key", "", "AMQP binding key")
 	consumerTag       = flag.String("consumer-tag", "simple-consumer", "AMQP consumer tag (should not be blank)")
 	lifetime          = flag.Duration("lifetime", 0*time.Second, "lifetime of process before shutdown (0s=infinite)")

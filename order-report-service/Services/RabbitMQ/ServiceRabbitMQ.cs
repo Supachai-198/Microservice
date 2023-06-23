@@ -13,7 +13,7 @@ namespace OrderReportService.Services
         {
             var factory = new ConnectionFactory
             {
-                Uri = new Uri("amqp://rabbitmq:1jj395qu@178.128.57.228:5672")
+                Uri = new Uri("amqp://rabbitmq:1jj395qu@167.172.67.20:5672")
             };
 
             this.connection = factory.CreateConnection();
@@ -29,7 +29,7 @@ namespace OrderReportService.Services
                 Console.WriteLine(message);
             };
 
-            channel.BasicConsume("q.akenarin.order.report.service", true, consumer);
+            channel.BasicConsume("q.supachai.order.report.service", true, consumer);
 
         }
 
